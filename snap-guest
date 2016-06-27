@@ -17,7 +17,9 @@ OPTIONS:
   --base [image] | -b [image]
         Base image name (template) - required
   --target [name] | -t [name]
-        Target image name (and hostname) - required
+        Target image name - required
+  --hostname [name] | -t [name]
+        Target hostname - required
   --network [opts] | -n [opts]
         Network options for virt-install (default: "network=default")
   --network2 [opts]
@@ -97,6 +99,7 @@ SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 SOURCE_NAME=""
 TARGET_NAME=""
+TARGET_HOSTNAME=""
 NETWORK="network=default"
 NETWORK2=""
 MEM="800"
@@ -124,7 +127,7 @@ STATIC_NETMASK=""
 STATIC_GATEWAY=""
 CPU_FEATURE=""
 
-if ! options=$(getopt -o hlfwb:t:n:m:c:d:p:s:1:g:i: -l list,list-all,force,add-ip,image-dir:,base-image-dir:,base:,graphics:,target:,network:,network2:,memory:,cpus:,domain:,domain-prefix:,swap:,firstboot:,cloud-image,cloud-preconf,user-data-ssh,user-data-stdin,user-data-file:,boot-script,boot-script-prefix:,static-ipaddr:,static-netmask:,static-gateway:,cpu-feature:,help -- "$@"); then
+if ! options=$(getopt -o hlfwb:t:n:m:c:d:p:s:1:g:i: -l list,list-all,force,add-ip,image-dir:,base-image-dir:,base:,graphics:,target:,hostname:,network:,network2:,memory:,cpus:,domain:,domain-prefix:,swap:,firstboot:,cloud-image,cloud-preconf,user-data-ssh,user-data-stdin,user-data-file:,boot-script,boot-script-prefix:,static-ipaddr:,static-netmask:,static-gateway:,cpu-feature:,help -- "$@"); then
   exit 1
 fi
 
@@ -141,6 +144,7 @@ while [ $# -gt 0 ]; do
     --base|-b) SOURCE_NAME="$2" ; shift ;;
     --graphics|-g) GRAPHICS_OPTS="$2" ; shift ;;
     --target|-t) TARGET_NAME="$2" ; shift ;;
+    --hostname) TARGET_HOSTNAME="$2" ; shift ;;
     --network|-n) NETWORK="$2" ; shift ;;
     --network2) NETWORK2="--network=$2" ; shift ;;
     --memory|-m) MEM="$2" ; shift ;;
@@ -188,7 +192,10 @@ SOURCE_IMG=$(ls -v1 $BASE_IMAGE_DIR/${SOURCE_NAME}*.img | tail -n1)
 TARGET_IMG=$IMAGE_DIR/$TARGET_NAME.img
 TARGET_IMG_SWAP=$IMAGE_DIR/$TARGET_NAME-swap.img
 MAC="52:54:00$(echo "$(hostname)$TARGET_NAME" | openssl dgst -md5 -binary | hexdump -e '/1 ":%02x"' -n 3)"
-TARGET_HOSTNAME="$PREFIX$TARGET_NAME$DOMAIN"
+TARGET_HOSTNAME=$TARGET_HOSTNAME
+if [ -z "$TARGET_HOSTNAME" ]; then
+  TARGET_HOSTNAME="$PREFIX$TARGET_NAME$DOMAIN"
+fi
 
 if [ ! -f "$SOURCE_IMG" ]; then
   echo "Base image $SOURCE_IMG not found!"

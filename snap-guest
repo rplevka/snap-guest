@@ -191,7 +191,7 @@ done
 SOURCE_IMG=$(ls -v1 $BASE_IMAGE_DIR/${SOURCE_NAME}*.img | tail -n1)
 TARGET_IMG=$IMAGE_DIR/$TARGET_NAME.img
 TARGET_IMG_SWAP=$IMAGE_DIR/$TARGET_NAME-swap.img
-MAC="52:54:00$(echo "$(hostname)$TARGET_NAME" | openssl dgst -md5 -binary | hexdump -e '/1 ":%02x"' -n 3)"
+MAC="52:54:00$(echo "$(hostname)$TARGET_NAME" | openssl dgst -md5 -binary | hexdump -ve '/1 ":%02x"' -n 3)"
 TARGET_HOSTNAME=$TARGET_HOSTNAME
 if [ -z "$TARGET_HOSTNAME" ]; then
   TARGET_HOSTNAME="$PREFIX$TARGET_NAME$DOMAIN"
